@@ -2,8 +2,10 @@
 name = "aetherling"
 version = "0.1.0"
 authors = ["David Durst <davidbdurst@gmail.com>"]
-edition = "2020"
+edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+time = "0.1.12"
+regex = "0.1.41"
