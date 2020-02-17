@@ -1,2 +1,2 @@
-pub type NodeIndex = Option<i32>;
+pub type NodeIndex = Option<u32>;
 pub type SeqLen = u32;
