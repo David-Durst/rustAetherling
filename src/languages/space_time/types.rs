@@ -35,7 +35,29 @@ impl Type {
             Type::ATuple{ left, right } => left.size() + right.size(),
             Type::STuple { n, elem_type } => *n * elem_type.size(),
             Type::SSeq { n, elem_type } => *n * elem_type.size(),
-            Type::TSeq { n, i, elem_type } => elem_type.size()
+            Type::TSeq { n: _, i: _, elem_type } => elem_type.size()
+        }
+    }
+
+    /// Compute the number of atoms per valid clock
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use aetherling::languages::space_time::types::Type;
+    /// let t = Type::SSeq {n: 3, elem_type: Box::from(Type::Bit)};
+    ///
+    /// assert_eq!(t.atoms_per_valid(), 3);
+    /// ```
+    pub fn atoms_per_valid(&self) -> u32 {
+        match self {
+            Type::Unit => 1,
+            Type::Bit=> 1,
+            Type::Int => 1,
+            Type::ATuple{ .. } => 1,
+            Type::STuple { n, elem_type } => *n * elem_type.atoms_per_valid(),
+            Type::SSeq { n, elem_type } => *n * elem_type.atoms_per_valid(),
+            Type::TSeq { n: _, i: _, elem_type } => elem_type.atoms_per_valid()
         }
     }
 
@@ -57,8 +79,8 @@ impl Type {
             Type::Bit=> 1,
             Type::Int => 1,
             Type::ATuple{ .. } => 1,
-            Type::STuple { n, elem_type } => elem_type.clocks(),
-            Type::SSeq { n, elem_type } => elem_type.clocks(),
+            Type::STuple { n: _, elem_type } => elem_type.clocks(),
+            Type::SSeq { n: _, elem_type } => elem_type.clocks(),
             Type::TSeq { n, i, elem_type } => (*n+*i) * elem_type.clocks()
         }
     }
@@ -81,9 +103,9 @@ impl Type {
             Type::Bit=> 1,
             Type::Int => 1,
             Type::ATuple{ .. } => 1,
-            Type::STuple { n, elem_type } => elem_type.clocks(),
-            Type::SSeq { n, elem_type } => elem_type.clocks(),
-            Type::TSeq { n, i, elem_type } => *n * elem_type.clocks()
+            Type::STuple { n: _, elem_type } => elem_type.clocks(),
+            Type::SSeq { n: _, elem_type } => elem_type.clocks(),
+            Type::TSeq { n, i: _, elem_type } => *n * elem_type.clocks()
         }
     }
 }

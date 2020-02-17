@@ -24,8 +24,8 @@ pub enum NodeInputs {
 /// The each node's producers are indicated using the `inputs` field.
 /// The compiler guarantees that `index` is unique per tree.
 #[derive(Debug, PartialEq, Eq)]
-pub struct Node{
-    index: SeqLen,
+pub struct Node {
+    index: NodeIndex,
     node_kind: NodeKind,
     inputs: NodeInputs
 }
