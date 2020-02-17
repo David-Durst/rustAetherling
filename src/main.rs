@@ -12,6 +12,7 @@ fn main() {
     let p = Point { x: 5, y: 10 };
 
     println!("p.x = {}", p.x());
+    aetherling::run()
 }
 /*
 fn dangle() -> String {
@@ -57,16 +58,6 @@ impl<T> Point<T> {
         &self.x
     }
 }
-
-struct ImportantExcerpt<'a> {
-    part: &'a str,
-}
-impl ImportantExcerpt<'_> {
-    fn level(&self) -> i32 {
-        3
-    }
-}
-
 
 #[cfg(test)]
 mod tests {
