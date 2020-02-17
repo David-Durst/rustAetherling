@@ -55,63 +55,64 @@ generate_st_val_idxs_for_st_type_new idx_to_str t = do
 
 fn convert_seq_idxs_to_vals_to_time_space_vec(seq_idxs_to_vals: &mut HashMap<usize, String>,
                                               st_type: Type) -> Vec<Vec<String>> {
-    let total_width = st_type.atoms_per_valid() as usize;
-    let total_time = st_type.clocks() as usize;
-    let valid_time = st_type.valid_clocks() as usize;
+    let total_width = st_type.atoms_per_valid();
+    let total_time = st_type.clocks();
+    let valid_time = st_type.valid_clocks();
     let mut time_space_values_vec: Vec<Vec<String>> = Vec::with_capacity(total_time as usize);
-    for mut v in time_space_values_vec.iter_mut() {
+    for v in time_space_values_vec.iter_mut() {
         *v = Vec::with_capacity(total_width as usize);
     };
-    set_val_in_time_space_vec(&mut seq_idxs_to_vals, &mut time_space_values_vec,
-                              &st_type, total_width, total_time, valid_time, 0, 0, True, 0);
+    set_val_in_time_space_vec(seq_idxs_to_vals, &mut time_space_values_vec,
+                              &st_type, total_width, total_time, valid_time, 0, 0, true, 0);
+    time_space_values_vec
 }
 
 fn set_val_in_time_space_vec(seq_idx_to_vals: &mut HashMap<usize, String>,
                              time_space_values_vec: &mut Vec<Vec<String>>,
-                             st_type: &Type, total_width: usize, total_time: usize,
-                             valid_time: usize, cur_space: usize, cur_time: usize,
-                             valid: bool, cur_idx: usize) {
+                             st_type: &Type, total_width: u32, total_time: u32,
+                             valid_time: u32, cur_space: u32, cur_time: u32,
+                             valid: bool, cur_idx: u32) {
     match st_type {
-        Type::STuple { n, elem_type } => {
-            let element_width = total_width / (*n as usize);
+        Type::STuple { n, elem_type : _} => {
+            let element_width = total_width / *n;
             let element_time = total_time;
             let element_valid_time = valid_time;
             for i in 0..=n - 1 {
                 set_val_in_time_space_vec(seq_idx_to_vals, time_space_values_vec, st_type,
                                           element_width, element_time,
-                                          element_valid_time, (cur_space + i * element_width),
+                                          element_valid_time, cur_space + i * element_width,
                                           cur_time, valid,
-                                          (cur_idx + i * element_width * element_valid_time))
+                                          cur_idx + i * element_width * element_valid_time)
             }
         }
-        Type::SSeq { n, elem_type} => {
-            let element_width = total_width / (*n as usize);
+        Type::SSeq { n, elem_type: _} => {
+            let element_width = total_width / *n;
             let element_time = total_time;
             let element_valid_time = valid_time;
             for i in 0..=n - 1 {
                 set_val_in_time_space_vec(seq_idx_to_vals, time_space_values_vec, st_type,
                                           element_width, element_time,
-                                          element_valid_time, (cur_space + i * element_width),
+                                          element_valid_time, cur_space + i * element_width,
                                           cur_time, valid,
-                                          (cur_idx + i * element_width * element_valid_time))
+                                          cur_idx + i * element_width * element_valid_time)
             }
         }
-        Type::TSeq {n, i, elem_type} => {
+        Type::TSeq {n, i, elem_type: _} => {
             let element_width = total_width;
-            let element_time = total_time / ((*n + *i) as usize);
-            let element_valid_time = valid_time / (*n as usize);
+            let element_time = total_time / (*n + *i);
+            let element_valid_time = valid_time / *n;
             for i in 0..=n - 1 {
                 set_val_in_time_space_vec(seq_idx_to_vals, time_space_values_vec, st_type,
                                           element_width, element_time,
                                           element_valid_time, cur_space,
-                                          (cur_time + (i as usize) * element_time), (valid && i < (*n as usize)),
-                                          (cur_idx + (i as usize) * element_width * element_valid_time))
+                                          cur_time + i * element_time, valid && i < *n,
+                                          cur_idx + i * element_width * element_valid_time)
             }
         }
         _ =>  {
-            time_space_values_vec.get_mut(cur_time).unwrap()
-                .get_mut(cur_space).unwrap() =
-                seq_idx_to_vals.get_mut(&cur_idx).unwrap()
+            let mut elem = time_space_values_vec.get_mut(cur_time as usize).unwrap()
+                .get_mut(cur_space as usize).unwrap();
+            elem = seq_idx_to_vals.get_mut(&(cur_idx as usize)).unwrap();
         }
     }
 }
