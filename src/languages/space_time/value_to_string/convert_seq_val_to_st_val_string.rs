@@ -28,13 +28,139 @@ convert_seq_val_to_st_val_string seq_val st_type conf = do
 #[derive(Debug)]
 pub struct STValsAndValids {
     values: String,
-    valids: String
+    valids: String,
 }
 
-pub fn convert_seq_val_to_st_val_string<T: ToAtomStrings>(seq_val: T, t: Type) -> STValsAndValids {
+pub fn convert_seq_val_to_st_val_string<T: ToAtomStrings>(seq_val: T, st_type: Type) -> STValsAndValids {
     let mut flat_val_strs: Vec<String> = Vec::new();
     seq_val.convert_to_flat_atom_list(&mut flat_val_strs, true);
     let flat_val_idx_to_str: HashMap<usize, String> = flat_val_strs.into_iter().enumerate().collect();
 
-    STValsAndValids{values: String::from(""), valids: String::from("")}
+    STValsAndValids { values: String::from(""), valids: String::from("") }
 }
+
+/*
+generate_st_val_idxs_for_st_type_new :: M.Map Int String -> AST_Type -> [[String]]
+generate_st_val_idxs_for_st_type_new idx_to_str t = do
+  let total_width = num_atoms_per_valid_t t
+  let total_time = clocks_t t
+  let valid_time = valid_clocks_t t
+  --let initial_idxs = newArray ((0,0),(total_time-1,total_width-1)) (ST_Val_Index 0 False 0 0)
+  --set_val_index t total_width total_time valid_time 0 0 True 0 initial_idxs
+  let arr = runSTArray $ initialize_and_set_val_indexes idx_to_str t total_width total_time
+            valid_time
+  [[ arr Arr.! (t, s) | s <- [0..total_width - 1]] | t <- [0..total_time-1]]
+
+*/
+
+fn convert_seq_idxs_to_vals_to_time_space_vec(seq_idxs_to_vals: &mut HashMap<usize, String>,
+                                              st_type: Type) -> Vec<Vec<String>> {
+    let total_width = st_type.atoms_per_valid() as usize;
+    let total_time = st_type.clocks() as usize;
+    let valid_time = st_type.valid_clocks() as usize;
+    let mut time_space_values_vec: Vec<Vec<String>> = Vec::with_capacity(total_time as usize);
+    for mut v in time_space_values_vec.iter_mut() {
+        *v = Vec::with_capacity(total_width as usize);
+    };
+    set_val_in_time_space_vec(&mut seq_idxs_to_vals, &mut time_space_values_vec,
+                              &st_type, total_width, total_time, valid_time, 0, 0, True, 0);
+}
+
+fn set_val_in_time_space_vec(seq_idx_to_vals: &mut HashMap<usize, String>,
+                             time_space_values_vec: &mut Vec<Vec<String>>,
+                             st_type: &Type, total_width: usize, total_time: usize,
+                             valid_time: usize, cur_space: usize, cur_time: usize,
+                             valid: bool, cur_idx: usize) {
+    match st_type {
+        Type::STuple { n, elem_type } => {
+            let element_width = total_width / (*n as usize);
+            let element_time = total_time;
+            let element_valid_time = valid_time;
+            for i in 0..=n - 1 {
+                set_val_in_time_space_vec(seq_idx_to_vals, time_space_values_vec, st_type,
+                                          element_width, element_time,
+                                          element_valid_time, (cur_space + i * element_width),
+                                          cur_time, valid,
+                                          (cur_idx + i * element_width * element_valid_time))
+            }
+        }
+        Type::SSeq { n, elem_type} => {
+            let element_width = total_width / (*n as usize);
+            let element_time = total_time;
+            let element_valid_time = valid_time;
+            for i in 0..=n - 1 {
+                set_val_in_time_space_vec(seq_idx_to_vals, time_space_values_vec, st_type,
+                                          element_width, element_time,
+                                          element_valid_time, (cur_space + i * element_width),
+                                          cur_time, valid,
+                                          (cur_idx + i * element_width * element_valid_time))
+            }
+        }
+        Type::TSeq {n, i, elem_type} => {
+            let element_width = total_width;
+            let element_time = total_time / ((*n + *i) as usize);
+            let element_valid_time = valid_time / (*n as usize);
+            for i in 0..=n - 1 {
+                set_val_in_time_space_vec(seq_idx_to_vals, time_space_values_vec, st_type,
+                                          element_width, element_time,
+                                          element_valid_time, cur_space,
+                                          (cur_time + (i as usize) * element_time), (valid && i < (*n as usize)),
+                                          (cur_idx + (i as usize) * element_width * element_valid_time))
+            }
+        }
+        _ =>  {
+            time_space_values_vec.get_mut(cur_time).unwrap()
+                .get_mut(cur_space).unwrap() =
+                seq_idx_to_vals.get_mut(&cur_idx).unwrap()
+        }
+    }
+}
+
+/*
+set_val_index idx_to_str (STupleT n t) total_width
+  total_time valid_time cur_space cur_time valid cur_idx st_val_idxs = do
+  let element_width = total_width `div` n
+  let element_time = total_time
+  let element_valid_time = valid_time
+  foldM'
+    (\_ j -> set_val_index idx_to_str t
+           element_width element_time element_valid_time
+           (cur_space + j*element_width) cur_time
+           valid
+           (cur_idx + j*element_width*element_valid_time)
+           st_val_idxs
+    ) () [0..n-1]
+  return ()
+set_val_index idx_to_str (SSeqT n t) total_width
+  total_time valid_time cur_space cur_time valid cur_idx st_val_idxs = do
+  let element_width = total_width `div` n
+  let element_time = total_time
+  let element_valid_time = valid_time
+  foldM'
+    (\_ j -> set_val_index idx_to_str t
+           element_width element_time element_valid_time
+           (cur_space + j*element_width) cur_time
+           valid
+           (cur_idx + j*element_width*element_valid_time)
+           st_val_idxs
+    ) () [0..n-1]
+  return ()
+set_val_index idx_to_str (TSeqT n i t) total_width
+  total_time valid_time cur_space cur_time valid cur_idx st_val_idxs = do
+  let element_width = total_width
+  let element_time = total_time `div` (n+i)
+  let element_valid_time = valid_time `div` n
+  foldM'
+    (\_ j -> set_val_index idx_to_str t
+           element_width element_time element_valid_time
+           cur_space (cur_time + j * element_time)
+           (valid && j < n)
+           (cur_idx + j*element_width*element_valid_time)
+           st_val_idxs
+    ) () [0..(n+i)-1]
+  return ()
+set_val_index idx_to_str _ _ _ _ cur_space cur_time valid cur_idx st_val_idxs = do
+  writeArray st_val_idxs (cur_time, cur_space)
+    (M.findWithDefault "0" cur_idx idx_to_str)
+
+*/
