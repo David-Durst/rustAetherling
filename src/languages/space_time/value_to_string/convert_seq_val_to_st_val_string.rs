@@ -60,9 +60,14 @@ fn convert_seq_idxs_to_vals_to_time_space_vec(seq_idxs_to_vals: &mut HashMap<usi
     let total_time = st_type.clocks();
     let valid_time = st_type.valid_clocks();
     let mut time_space_values_vec: Vec<Vec<Rc<String>>> = Vec::with_capacity(total_time as usize);
-    for v in time_space_values_vec.iter_mut() {
-        *v = Vec::with_capacity(total_width as usize);
-    };
+    let def_str = Rc::new(String::from("0"));
+    for _ in 0..total_time {
+        let mut inner_vec = Vec::with_capacity(total_width as usize);
+        for _ in 0..total_width {
+           inner_vec.push(def_str.clone()) ;
+        }
+        time_space_values_vec.push(inner_vec)
+    }
     set_val_in_time_space_vec(seq_idxs_to_vals, &mut time_space_values_vec,
                               &st_type, total_width, total_time, valid_time, 0, 0, true, 0);
     time_space_values_vec
