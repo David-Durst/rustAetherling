@@ -153,4 +153,16 @@ mod tests {
         let data = String::from_utf8(builder).unwrap();
         assert_eq!(data, String::from("[[1,3],[2,4],[6,5]]"))
     }
+
+    #[test]
+    fn test_convert_seq_val_to_st_val_string_big() {
+        let mut builder = Vec::new();
+        let seq_val: Vec<i32> = (1..=1920*1080).collect();
+        convert_seq_val_to_st_val_string(seq_val,
+                                         Type::TSeq {n: (1920 * 1080 / 2), i: 0, elem_type: Box::from(
+                                             Type::SSeq {n: 2, elem_type: Box::from(Type::Int)})},
+                                         &mut builder).unwrap();
+        let data = String::from_utf8(builder).unwrap();
+        assert_eq!(17551297, data.len())
+    }
 }
