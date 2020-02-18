@@ -1,6 +1,9 @@
 use super::to_atom_strings::ToAtomStrings;
 use super::super::types::Type;
 use std::collections::HashMap;
+use std::error::Error;
+use std::rc::Rc;
+use std::io::Write;
 /*
 convert_seq_val_to_st_val_string ::
   Convertible_To_Atom_Strings a => a -> AST_Type ->
@@ -25,18 +28,16 @@ convert_seq_val_to_st_val_string seq_val st_type conf = do
   ST_Val_String st_val_string [True]
 */
 
-#[derive(Debug)]
-pub struct STValsAndValids {
-    values: String,
-    valids: String,
-}
-
-pub fn convert_seq_val_to_st_val_string<T: ToAtomStrings>(seq_val: T, st_type: Type) -> STValsAndValids {
-    let mut flat_val_strs: Vec<String> = Vec::new();
+pub fn convert_seq_val_to_st_val_string<T: ToAtomStrings, W: Write>(seq_val: T, st_type: Type, sink: &mut W) -> Result<(), Box<dyn Error>> {
+    let mut wtr = csv::Writer::from_writer(sink);
+    let mut flat_val_strs: Vec<Rc<String>> = Vec::new();
     seq_val.convert_to_flat_atom_list(&mut flat_val_strs, true);
-    let flat_val_idx_to_str: HashMap<usize, String> = flat_val_strs.into_iter().enumerate().collect();
+    let mut flat_val_idx_to_str: HashMap<usize, Rc<String>> = flat_val_strs.into_iter().enumerate().collect();
 
-    STValsAndValids { values: String::from(""), valids: String::from("") }
+    let st_vals = convert_seq_idxs_to_vals_to_time_space_vec(&mut flat_val_idx_to_str, st_type);
+    wtr.serialize(st_vals)?;
+    wtr.flush()?;
+    Ok(())
 }
 
 /*
@@ -53,12 +54,12 @@ generate_st_val_idxs_for_st_type_new idx_to_str t = do
 
 */
 
-fn convert_seq_idxs_to_vals_to_time_space_vec(seq_idxs_to_vals: &mut HashMap<usize, String>,
-                                              st_type: Type) -> Vec<Vec<String>> {
+fn convert_seq_idxs_to_vals_to_time_space_vec(seq_idxs_to_vals: &mut HashMap<usize, Rc<String>>,
+                                              st_type: Type) -> Vec<Vec<Rc<String>>> {
     let total_width = st_type.atoms_per_valid();
     let total_time = st_type.clocks();
     let valid_time = st_type.valid_clocks();
-    let mut time_space_values_vec: Vec<Vec<String>> = Vec::with_capacity(total_time as usize);
+    let mut time_space_values_vec: Vec<Vec<Rc<String>>> = Vec::with_capacity(total_time as usize);
     for v in time_space_values_vec.iter_mut() {
         *v = Vec::with_capacity(total_width as usize);
     };
@@ -67,42 +68,42 @@ fn convert_seq_idxs_to_vals_to_time_space_vec(seq_idxs_to_vals: &mut HashMap<usi
     time_space_values_vec
 }
 
-fn set_val_in_time_space_vec(seq_idx_to_vals: &mut HashMap<usize, String>,
-                             time_space_values_vec: &mut Vec<Vec<String>>,
+fn set_val_in_time_space_vec(seq_idx_to_vals: &mut HashMap<usize, Rc<String>>,
+                             time_space_values_vec: &mut Vec<Vec<Rc<String>>>,
                              st_type: &Type, total_width: u32, total_time: u32,
                              valid_time: u32, cur_space: u32, cur_time: u32,
                              valid: bool, cur_idx: u32) {
     match st_type {
-        Type::STuple { n, elem_type : _} => {
+        Type::STuple { n, elem_type } => {
             let element_width = total_width / *n;
             let element_time = total_time;
             let element_valid_time = valid_time;
             for i in 0..=n - 1 {
-                set_val_in_time_space_vec(seq_idx_to_vals, time_space_values_vec, st_type,
+                set_val_in_time_space_vec(seq_idx_to_vals, time_space_values_vec, elem_type,
                                           element_width, element_time,
                                           element_valid_time, cur_space + i * element_width,
                                           cur_time, valid,
                                           cur_idx + i * element_width * element_valid_time)
             }
         }
-        Type::SSeq { n, elem_type: _} => {
+        Type::SSeq { n, elem_type} => {
             let element_width = total_width / *n;
             let element_time = total_time;
             let element_valid_time = valid_time;
             for i in 0..=n - 1 {
-                set_val_in_time_space_vec(seq_idx_to_vals, time_space_values_vec, st_type,
+                set_val_in_time_space_vec(seq_idx_to_vals, time_space_values_vec, elem_type,
                                           element_width, element_time,
                                           element_valid_time, cur_space + i * element_width,
                                           cur_time, valid,
                                           cur_idx + i * element_width * element_valid_time)
             }
         }
-        Type::TSeq {n, i, elem_type: _} => {
+        Type::TSeq {n, i, elem_type} => {
             let element_width = total_width;
             let element_time = total_time / (*n + *i);
             let element_valid_time = valid_time / *n;
             for i in 0..=n - 1 {
-                set_val_in_time_space_vec(seq_idx_to_vals, time_space_values_vec, st_type,
+                set_val_in_time_space_vec(seq_idx_to_vals, time_space_values_vec, elem_type,
                                           element_width, element_time,
                                           element_valid_time, cur_space,
                                           cur_time + i * element_time, valid && i < *n,
@@ -110,13 +111,28 @@ fn set_val_in_time_space_vec(seq_idx_to_vals: &mut HashMap<usize, String>,
             }
         }
         _ =>  {
-            let mut elem = time_space_values_vec.get_mut(cur_time as usize).unwrap()
-                .get_mut(cur_space as usize).unwrap();
-            elem = seq_idx_to_vals.get_mut(&(cur_idx as usize)).unwrap();
+            if valid {
+                time_space_values_vec[cur_time as usize][cur_space as usize] =
+                    seq_idx_to_vals.get_mut(&(cur_idx as usize)).unwrap().clone();
+            }
         }
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_convert_seq_val_to_st_val_string_sseq_4_int() {
+        let mut builder = Vec::new();
+        convert_seq_val_to_st_val_string(vec!(1,3,2,4),
+                                         Type::SSeq {n: 4, elem_type: Box::from(Type::Int)},
+                                         &mut builder).unwrap();
+        let data = String::from_utf8(builder).unwrap();
+        assert_eq!(data, String::from("[1,3,2,4]"))
+    }
+}
 /*
 set_val_index idx_to_str (STupleT n t) total_width
   total_time valid_time cur_space cur_time valid cur_idx st_val_idxs = do
