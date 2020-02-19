@@ -2,18 +2,19 @@ syntax = "proto3";
 
 package languages.space_time.types_serialized;
 
+enum TypeVersion {
+    Unit = 0;
+    Bit = 1;
+    Int = 2;
+    ATuple = 3;
+    STuple = 4;
+    SSeq = 5;
+    TSeq = 6;
+}
+
 message TypeSerialized {
-    enum TypeVersion {
-        Unit = 0;
-        Bit = 1;
-        Int = 2;
-        ATuple = 3;
-        STuple = 4;
-        SSeq = 5;
-        TSeq = 6;
-    }
     TypeVersion v = 1;
-    int32 n = 2;
-    int32 i = 3;
-    repeated TypeSerialized inputs = 4;
+    uint32 n = 2;
+    uint32 i = 3;
+    repeated TypeSerialized children = 4;
 }
