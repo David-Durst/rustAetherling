@@ -2,7 +2,7 @@
 use super::super::util::*;
 
 /// A type of a Space-Time IR expression's input or output.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Type {
     Unit,
     Bit,

@@ -1,4 +1,3 @@
-use std::io::{Read, Write};
 use std::io::Cursor;
 use types::Type;
 use prost::Message;
@@ -13,7 +12,19 @@ pub mod types_serialized {
 
 use types_serialized::{TypeSerialized, TypeVersion};
 
-pub fn load_type<T: Read + AsRef<[u8]>>(src: &mut T) -> Type {
+/// Convert a buffer with a protobuf representation of a Space-Time type
+/// to a Rust, Aetherling Space-Time type
+///
+/// # Examples
+/// ```
+/// use aetherling::languages::space_time::{ load_type, save_type };
+/// use aetherling::languages::space_time::types::Type;
+/// let saved_typed = save_type(&Type::Int);
+/// let loaded_type = load_type(&saved_typed);
+///
+/// assert_eq!(loaded_type, Type::Int)
+/// ```
+pub fn load_type<T: AsRef<[u8]>>(src: &T) -> Type {
     let serialized_type = TypeSerialized::decode(&mut Cursor::new(src))
         .unwrap();
     deserialize_type(&serialized_type)
@@ -43,7 +54,19 @@ fn deserialize_type(TypeSerialized {v, n, i, children} : &TypeSerialized) -> Typ
     }
 }
 
-pub fn save_type<T: Write>(t: &Type) -> Vec<u8> {
+/// Convert a Rust, Aetherling Space-Time type to a buffer with a
+/// protobuf representation of a Space-Time type
+///
+/// # Examples
+/// ```
+/// use aetherling::languages::space_time::{ load_type, save_type };
+/// use aetherling::languages::space_time::types::Type;
+/// let saved_typed = save_type(&Type::Bit);
+/// let loaded_type = load_type(&saved_typed);
+///
+/// assert_eq!(loaded_type, Type::Bit)
+/// ```
+pub fn save_type(t: &Type) -> Vec<u8> {
     let mut buffer = Vec::new();
     buffer.reserve(buffer.encoded_len());
     let proto_type = serialize_type(t);
