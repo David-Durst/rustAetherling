@@ -11,3 +11,8 @@ time = "0.1.12"
 rand = "0.7.3"
 csv = "1.1"
 serde = { version = "1", features = ["derive", "rc"] }
+prost = "0.6"
+
+[build-dependencies]
+prost-build = "0.6"
+
