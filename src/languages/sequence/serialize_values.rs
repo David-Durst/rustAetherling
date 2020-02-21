@@ -1,7 +1,6 @@
-use super::types::Type;
 use std::io::Cursor;
 use prost::Message;
-use super::proto::{ValueSerialized, TupleValue, SeqValue};
+use super::proto::ValueSerialized;
 use super::proto::value_serialized::Elems;
 use super::super::value_to_string::to_atom_strings::ToAtomStrings;
 
@@ -41,36 +40,19 @@ fn deserialize_value( serialized_value : &ValueSerialized) -> Box<dyn ToAtomStri
                     Box::new((e_left, e_right))
                 }
                 Elems::Seq(e_vec) => {
-                    let e_vec_deserialized = e_vec.map(|e| e.deserialize_value()).collect();
+                    let e_vec_deserialized: Vec<Box<dyn ToAtomStrings>> =
+                        e_vec.values.iter()
+                            .map(|e| deserialize_value(e)).collect();
                     Box::new(e_vec_deserialized)
                 }
             }
         },
         None => panic!("deserializing empty value")
     }
-    /*
-    // can't convert int to enum in match statement easily when using prost
-    if *v == TypeVersion::Unit as i32 {
-        Type::Unit
-    } else if *v == TypeVersion::Bit as i32 {
-        Type::Bit
-    } else if *v == TypeVersion::Int as i32 {
-        Type::Int
-    } else if *v == TypeVersion::ATuple as i32 {
-        let left = deserialize_type(&children[0]);
-        let right = deserialize_type(&children[1]);
-        Type::ATuple { left: Box::new(left), right: Box::new(right) }
-    } else {
-        let elem_type = deserialize_type(&children[0]);
-        Type::Seq { n: *n, elem_type: Box::new(elem_type) }
-    }
-    */
 }
-
 /*
-
-/// Convert a Rust, Aetherling Sequence type to a buffer with a
-/// protobuf representation of a Sequence type
+/// Convert a Rust, Aetherling Sequence value to a buffer with a
+/// protobuf representation of a Sequence value
 ///
 /// # Examples
 /// ```
@@ -81,16 +63,16 @@ fn deserialize_value( serialized_value : &ValueSerialized) -> Box<dyn ToAtomStri
 ///
 /// assert_eq!(loaded_type, Type::Bit)
 /// ```
-pub fn save_type(t: &Type) -> Vec<u8> {
+pub fn save_value<T: ToAtomStrings>(t: &T) -> Vec<u8> {
     let mut buffer = Vec::new();
     buffer.reserve(buffer.encoded_len());
-    let proto_type = serialize_type(t);
+    let proto_value = serialize_value(t);
     // Unwrap is safe, since we have reserved sufficient capacity in the vector.
-    proto_type.encode(&mut buffer).unwrap();
+    proto_value.encode(&mut buffer).unwrap();
     buffer
 }
 
-fn serialize_type(t: &Type) -> TypeSerialized {
+fn serialize_value<T: ToAtomStrings>(t: &T) -> TypeSerialized {
     match t {
         Type::Unit =>
             TypeSerialized {v: TypeVersion::Unit as i32, n: 0, children: Vec::new()},
