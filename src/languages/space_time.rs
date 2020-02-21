@@ -1,6 +1,5 @@
 pub mod ast;
 pub mod types;
-pub mod value_to_string;
 pub mod serialize;
 
 pub mod proto {

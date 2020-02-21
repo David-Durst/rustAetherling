@@ -1,5 +1,7 @@
+//! convert a Sequence value to a Space-Time value and save that value as a string to a buffer
+//! along with the valid and invalid clocks
 use super::to_atom_strings::ToAtomStrings;
-use super::super::types::Type;
+use super::super::space_time::types::Type;
 use std::collections::HashMap;
 use std::error::Error;
 use std::rc::Rc;
