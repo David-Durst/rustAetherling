@@ -40,7 +40,10 @@ fn deserialize_value( serialized_value : &ValueSerialized) -> Box<dyn ToAtomStri
                     };
                     Box::new((e_left, e_right))
                 }
-                _ => unimplemented!("hi")
+                Elems::Seq(e_vec) => {
+                    let e_vec_deserialized = e_vec.map(|e| e.deserialize_value()).collect();
+                    Box::new(e_vec_deserialized)
+                }
             }
         },
         None => panic!("deserializing empty value")
