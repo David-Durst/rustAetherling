@@ -1,4 +1,4 @@
 fn main() {
-    prost_build::compile_protos(&["protoAetherling/space_time.proto"],
+    prost_build::compile_protos(&["protoAetherling/spacetime.proto"],
                                 &["protoAetherling"]).unwrap();
 }
