@@ -8,7 +8,7 @@ use super::proto::{TypeSerialized, TypeVersion};
 ///
 /// # Examples
 /// ```
-/// use aetherling::languages::sequence::serialize::{ load_type, save_type };
+/// use aetherling::languages::sequence::serialize_types::{ load_type, save_type };
 /// use aetherling::languages::sequence::types::Type;
 /// let saved_typed = save_type(&Type::Int);
 /// let loaded_type = load_type(&saved_typed);
@@ -44,7 +44,7 @@ fn deserialize_type(TypeSerialized {v, n, children} : &TypeSerialized) -> Type {
 ///
 /// # Examples
 /// ```
-/// use aetherling::languages::sequence::serialize::{ load_type, save_type };
+/// use aetherling::languages::sequence::serialize_types::{ load_type, save_type };
 /// use aetherling::languages::sequence::types::Type;
 /// let saved_typed = save_type(&Type::Bit);
 /// let loaded_type = load_type(&saved_typed);

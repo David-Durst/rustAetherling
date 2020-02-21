@@ -74,6 +74,12 @@ impl<A: ToAtomStrings > ToAtomStrings for Vec<A> {
     }
 }
 
+impl<A: ToAtomStrings + ?Sized > ToAtomStrings for Box<A> {
+    fn convert_to_flat_atom_list(&self, builder: &mut Vec<Rc<String>>, top: bool) {
+        self.as_ref().convert_to_flat_atom_list(builder, top)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
