@@ -1,7 +1,6 @@
 use std::io::Cursor;
 use prost::Message;
 use std::fmt::Write;
-use std::fmt::Debug;
 use std::rc::Rc;
 use super::proto::{ValueSerialized, TupleValue, SeqValue};
 use super::proto::value_serialized::Elems;
