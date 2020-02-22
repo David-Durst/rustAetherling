@@ -6,9 +6,9 @@ use std::fs;
 use std::fs::File;
 
 pub fn run(conf: Config) {
-    let seq_values_proto = fs::read_to_string(conf.sequence_values_proto_path)
+    let seq_values_proto = fs::read(conf.sequence_values_proto_path)
         .expect("couldn't read seq values proto file");
-    let st_type_proto = fs::read_to_string(conf.space_time_type_proto_path)
+    let st_type_proto = fs::read(conf.space_time_type_proto_path)
         .expect("couldn't read space time type proto file");
     let seq_values = serialize_values::load_value(&seq_values_proto);
     let st_type = serialize::load_type(&st_type_proto);
