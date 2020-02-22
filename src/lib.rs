@@ -21,8 +21,8 @@ pub fn run(conf: Config) {
 
 #[derive(Debug, PartialEq)]
 pub struct Config {
-    sequence_values_proto_path: String,
-    space_time_type_proto_path: String,
-    output_values_csv_path: String,
-    output_valids_csv_path: String
+    pub sequence_values_proto_path: String,
+    pub space_time_type_proto_path: String,
+    pub output_values_csv_path: String,
+    pub output_valids_csv_path: String
 }
