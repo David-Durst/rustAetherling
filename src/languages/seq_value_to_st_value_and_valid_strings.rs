@@ -1,13 +1,13 @@
 //! convert a Sequence value to a Space-Time value and save that value as a string to a buffer
 //! along with the valid and invalid clocks
-use super::to_atom_strings::ToAtomStrings;
-use super::super::space_time::types::Type;
+use super::sequence::serialize_values::SerializableSeqValue;
+use super::space_time::types::Type;
 use std::collections::HashMap;
 use std::error::Error;
 use std::rc::Rc;
 use std::io::Write;
 
-pub fn convert_seq_val_to_st_val_and_valid_strings<T: ToAtomStrings, W: Write>(
+pub fn convert_seq_val_to_st_val_and_valid_strings<T: SerializableSeqValue, W: Write>(
     seq_val: T, st_type: Type, vals_sink: &mut W, valids_sink: &mut W) -> Result<(), Box<dyn Error>> {
     let mut flat_val_strs: Vec<Rc<String>> = Vec::new();
     seq_val.convert_to_flat_atom_list(&mut flat_val_strs, true);
