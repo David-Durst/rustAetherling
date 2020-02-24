@@ -24,7 +24,7 @@ fn deserialize_haskell_seq_value() {
 fn deserialize_haskell_st_type() {
     let mut file = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     file.push("resources/tests/st_type_proto.bin");
-    let st_type_proto = fs::read_to_string("/tmp/ae_proto_types_05225-147.bin")
+    let st_type_proto = fs::read(file)
         .expect("couldn't read space time type proto file");
     let st_type = st_ser::load_type(&st_type_proto);
     assert_eq!(st_type, Type::TSeq{ n: 4, i: 0, elem_type: Box::new(Type::Int) });
