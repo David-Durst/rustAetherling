@@ -103,9 +103,9 @@ impl Type {
             Type::Bit=> 1,
             Type::Int => 1,
             Type::ATuple{ .. } => 1,
-            Type::STuple { n: _, elem_type } => elem_type.clocks(),
-            Type::SSeq { n: _, elem_type } => elem_type.clocks(),
-            Type::TSeq { n, i: _, elem_type } => *n * elem_type.clocks()
+            Type::STuple { n: _, elem_type } => elem_type.valid_clocks(),
+            Type::SSeq { n: _, elem_type } => elem_type.valid_clocks(),
+            Type::TSeq { n, i: _, elem_type } => *n * elem_type.valid_clocks()
         }
     }
 }

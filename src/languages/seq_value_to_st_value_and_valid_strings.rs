@@ -116,7 +116,7 @@ fn set_val_in_time_space_vecs(seq_idx_to_vals: &mut HashMap<usize, Rc<String>>,
         _ =>  {
             if valid {
                 time_space_values_vec[cur_time as usize][cur_space as usize] =
-                    seq_idx_to_vals.get_mut(&(cur_idx as usize)).unwrap().clone();
+                    seq_idx_to_vals.get_mut(&(cur_idx as usize)).expect("couldn't get atom string at index").clone();
             }
             else if cur_space == 0 {
                 time_valids_vec[cur_time as usize] = false;
