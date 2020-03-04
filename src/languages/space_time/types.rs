@@ -6,15 +6,17 @@ use super::super::util::*;
 pub enum Type {
     Unit,
     Bit,
-    Int,
+    Int8,
+    UInt8,
+    Int16,
+    UInt16,
+    Int32,
+    UInt32,
     ATuple{left: Box<Type>, right: Box<Type>},
     STuple{n: SeqLen, elem_type: Box<Type>},
     SSeq{n: SeqLen, elem_type: Box<Type>},
     TSeq{n: SeqLen, i: SeqLen, elem_type: Box<Type>}
 }
-
-const SIZE_INT: u32 = 8;
-const SIZE_BIT: u32 = 1;
 
 impl Type {
     /// Compute the size in bits of a type.
@@ -30,8 +32,13 @@ impl Type {
     pub fn size(&self) -> u32 {
         match self {
             Type::Unit => 0,
-            Type::Bit=> SIZE_BIT,
-            Type::Int => SIZE_INT,
+            Type::Bit=> 1,
+            Type::Int8 => 8,
+            Type::UInt8 => 8,
+            Type::Int16 => 16,
+            Type::UInt16 => 16,
+            Type::Int32 => 32,
+            Type::UInt32 => 32,
             Type::ATuple{ left, right } => left.size() + right.size(),
             Type::STuple { n, elem_type } => *n * elem_type.size(),
             Type::SSeq { n, elem_type } => *n * elem_type.size(),
@@ -53,7 +60,12 @@ impl Type {
         match self {
             Type::Unit => 1,
             Type::Bit=> 1,
-            Type::Int => 1,
+            Type::Int8 => 1,
+            Type::UInt8 => 1,
+            Type::Int16 => 1,
+            Type::UInt16 => 1,
+            Type::Int32 => 1,
+            Type::UInt32 => 1,
             Type::ATuple{ .. } => 1,
             Type::STuple { n, elem_type } => *n * elem_type.atoms_per_valid(),
             Type::SSeq { n, elem_type } => *n * elem_type.atoms_per_valid(),
@@ -69,7 +81,7 @@ impl Type {
     ///
     /// ```
     /// use aetherling::languages::space_time::types::Type;
-    /// let t = Type::TSeq {n:4, i:2, elem_type:Box::from(Type::Int)};
+    /// let t = Type::TSeq {n:4, i:2, elem_type:Box::from(Type::UInt8)};
     ///
     /// assert_eq!(t.clocks(), 6)
     /// ```
@@ -77,7 +89,12 @@ impl Type {
         match self {
             Type::Unit => 1,
             Type::Bit=> 1,
-            Type::Int => 1,
+            Type::Int8 => 1,
+            Type::UInt8 => 1,
+            Type::Int16 => 1,
+            Type::UInt16 => 1,
+            Type::Int32 => 1,
+            Type::UInt32 => 1,
             Type::ATuple{ .. } => 1,
             Type::STuple { n: _, elem_type } => elem_type.clocks(),
             Type::SSeq { n: _, elem_type } => elem_type.clocks(),
@@ -93,7 +110,7 @@ impl Type {
     ///
     /// ```
     /// use aetherling::languages::space_time::types::Type;
-    /// let t = Type::TSeq {n:4, i:2, elem_type:Box::from(Type::Int)};
+    /// let t = Type::TSeq {n:4, i:2, elem_type:Box::from(Type::UInt8)};
     ///
     /// assert_eq!(t.valid_clocks(), 4)
     /// ```
@@ -101,7 +118,12 @@ impl Type {
         match self {
             Type::Unit => 1,
             Type::Bit=> 1,
-            Type::Int => 1,
+            Type::Int8 => 1,
+            Type::UInt8 => 1,
+            Type::Int16 => 1,
+            Type::UInt16 => 1,
+            Type::Int32 => 1,
+            Type::UInt32 => 1,
             Type::ATuple{ .. } => 1,
             Type::STuple { n: _, elem_type } => elem_type.valid_clocks(),
             Type::SSeq { n: _, elem_type } => elem_type.valid_clocks(),

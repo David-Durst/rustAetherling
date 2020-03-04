@@ -6,7 +6,12 @@ use super::super::util::*;
 pub enum Type {
     Unit,
     Bit,
-    Int,
+    Int8,
+    UInt8,
+    Int16,
+    UInt16,
+    Int32,
+    UInt32,
     ATuple{left: Box<Type>, right: Box<Type>},
     Seq{n: SeqLen, elem_type: Box<Type>},
 }

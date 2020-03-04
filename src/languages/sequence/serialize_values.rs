@@ -32,6 +32,7 @@ fn deserialize_value( serialized_value : &ValueSerialized) -> Box<dyn Serializab
         Some(elem) => {
             match elem {
                 Elems::Int(e) => Box::new(*e),
+                Elems::Uint(e) => Box::new(*e),
                 Elems::Bit(e) => Box::new(*e),
                 Elems::Tuple(e_box) => {
                     let e_left = match &e_box.left {
@@ -96,6 +97,24 @@ pub trait SerializableSeqValue {
 impl SerializableSeqValue for i32 {
     fn convert_to_rust_proto(&self) -> ValueSerialized {
         ValueSerialized { elems: Some(Elems::Int(*self)) }
+    }
+
+    fn convert_to_flat_atom_list(&self, builder: &mut Vec<Rc<String>>, _: bool) {
+        match builder.last_mut() {
+            Some(s) => write!(Rc::get_mut(s).unwrap(), "{}", self),
+            None => {
+                let mut s = String::new();
+                let write_result = write!(s, "{}", self);
+                builder.push(Rc::from(s));
+                write_result
+            }
+        }.unwrap();
+    }
+}
+
+impl SerializableSeqValue for u32 {
+    fn convert_to_rust_proto(&self) -> ValueSerialized {
+        ValueSerialized { elems: Some(Elems::Uint(*self)) }
     }
 
     fn convert_to_flat_atom_list(&self, builder: &mut Vec<Rc<String>>, _: bool) {

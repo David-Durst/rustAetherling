@@ -134,7 +134,7 @@ mod tests {
         let mut vals_builder = Vec::new();
         let mut valids_builder = Vec::new();
         convert_seq_val_to_st_val_and_valid_strings(vec!(1, 3, 2, 4),
-                                                    Type::SSeq {n: 4, elem_type: Box::from(Type::Int)},
+                                                    Type::SSeq {n: 4, elem_type: Box::from(Type::UInt8)},
                                                     &mut vals_builder, &mut valids_builder).unwrap();
         let vals_data = String::from_utf8(vals_builder).unwrap();
         assert_eq!(vals_data, String::from("[[1,3,2,4]]"));
@@ -147,7 +147,7 @@ mod tests {
         let mut vals_builder = Vec::new();
         let mut valids_builder = Vec::new();
         convert_seq_val_to_st_val_and_valid_strings(vec!(1, 3, 2, 4),
-                                                    Type::TSeq {n: 4, i: 0, elem_type: Box::from(Type::Int)},
+                                                    Type::TSeq {n: 4, i: 0, elem_type: Box::from(Type::UInt8)},
                                                     &mut vals_builder, &mut valids_builder).unwrap();
         let vals_data = String::from_utf8(vals_builder).unwrap();
         assert_eq!(vals_data, String::from("[1,3,2,4]"));
@@ -160,7 +160,7 @@ mod tests {
         let mut vals_builder = Vec::new();
         let mut valids_builder = Vec::new();
         convert_seq_val_to_st_val_and_valid_strings(vec!(1, 3),
-                                                    Type::TSeq {n: 2, i: 1, elem_type: Box::from(Type::Int)},
+                                                    Type::TSeq {n: 2, i: 1, elem_type: Box::from(Type::UInt8)},
                                                     &mut vals_builder, &mut valids_builder).unwrap();
         let vals_data = String::from_utf8(vals_builder).unwrap();
         assert_eq!(vals_data, String::from("[1,3,0]"));
@@ -174,7 +174,7 @@ mod tests {
         let mut valids_builder = Vec::new();
         convert_seq_val_to_st_val_and_valid_strings(vec!(1, 3, 2, 4, 6, 5),
                                                     Type::TSeq {n: 3, i: 0, elem_type: Box::from(
-                                             Type::SSeq {n: 2, elem_type: Box::from(Type::Int)})},
+                                             Type::SSeq {n: 2, elem_type: Box::from(Type::UInt8)})},
                                                     &mut vals_builder, &mut valids_builder).unwrap();
         let vals_data = String::from_utf8(vals_builder).unwrap();
         assert_eq!(vals_data, String::from("[[1,3],[2,4],[6,5]]"));
