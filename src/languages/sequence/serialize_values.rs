@@ -171,11 +171,11 @@ impl<A: SerializableSeqValue, B: SerializableSeqValue> SerializableSeqValue for 
         let (a,b) = self;
         // now I know builder isn't empty and I'm trusting
         // that tuples are only of atoms.
-        write!(Rc::get_mut(builder.last_mut().unwrap()).unwrap(), "(").unwrap();
+        write!(Rc::get_mut(builder.last_mut().unwrap()).unwrap(), "[").unwrap();
         a.convert_to_flat_atom_list(builder, false);
         write!(Rc::get_mut(builder.last_mut().unwrap()).unwrap(), ",").unwrap();
         b.convert_to_flat_atom_list(builder, false);
-        write!(Rc::get_mut(builder.last_mut().unwrap()).unwrap(), ")").unwrap();
+        write!(Rc::get_mut(builder.last_mut().unwrap()).unwrap(), "]").unwrap();
     }
 }
 
@@ -231,7 +231,7 @@ mod tests {
     fn test_convert_to_flat_atom_list_tuple() {
         let mut builder: Vec<Rc<String>> = Vec::new();
         (3, false).convert_to_flat_atom_list(&mut builder, true);
-        assert_eq!(builder, vec!(Rc::from(String::from("(3,false)"))))
+        assert_eq!(builder, vec!(Rc::from(String::from("[3,false]"))))
     }
 
     #[test]
