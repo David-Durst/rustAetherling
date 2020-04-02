@@ -130,6 +130,23 @@ impl Type {
             Type::TSeq { n, i: _, elem_type } => *n * elem_type.valid_clocks()
         }
     }
+
+    pub fn def_atom_str(&self) -> String {
+        match self {
+            Type::Unit => "()".to_string(),
+            Type::Bit => "False".to_string(),
+            Type::Int8 => "0".to_string(),
+            Type::UInt8 => "0".to_string(),
+            Type::Int16 => "0".to_string(),
+            Type::UInt16 => "0".to_string(),
+            Type::Int32 => "0".to_string(),
+            Type::UInt32 => "0".to_string(),
+            Type::ATuple {left, right } => format!("[{},{}]", left.def_atom_str(), right.def_atom_str()),
+            Type::STuple {n: _, elem_type} => elem_type.def_atom_str(),
+            Type::SSeq {n: _, elem_type} => elem_type.def_atom_str(),
+            Type::TSeq {n: _, i: _, elem_type} => elem_type.def_atom_str()
+        }
+    }
 }
 
 /*

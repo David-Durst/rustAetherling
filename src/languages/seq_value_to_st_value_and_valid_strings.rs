@@ -57,7 +57,7 @@ fn convert_seq_idxs_to_vals_to_time_space_vecs(seq_idxs_to_vals: &mut HashMap<us
     let total_width = st_type.atoms_per_valid();
     let total_time = st_type.clocks();
     let valid_time = st_type.valid_clocks();
-    let def_str = Rc::new(String::from("0"));
+    let def_str = Rc::new(st_type.def_atom_str());
     for _ in 0..total_time {
         let mut inner_vec = Vec::with_capacity(total_width as usize);
         for _ in 0..total_width {
